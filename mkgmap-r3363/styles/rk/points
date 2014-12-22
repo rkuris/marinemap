@@ -413,10 +413,11 @@ seamark:light:15!=* & seamark:light:15:sector_start=*
 {add seamark:light:15='${seamark:light:15:colour}:${seamark:light:15:sector_start}:${seamark:light:15:sector_end}:${seamark:light:15:range}'}
 
 # seamark:name=* { name '${seamark:name}' }
-# seamark:name=* & seamark:light:period=* { name '"${seamark:name}" (${seamark:light:character} ${seamark:light:color} ${seamark:light:period}s)' }
+# seamark:name=* & seamark:light:period=* { name '"${seamark:name}" (${seamark:light:character} ${seamark:light:colour} ${seamark:light:period}s)' }
 
 seamark:name=* & seamark:light:character=* & seamark:light:colour=* { name '"${seamark:name}" (${seamark:light:character} ${seamark:light:colour} ${seamark:light:period}s)' }
 seamark:name=* & name!=* { name '"${seamark:name}"' }
+seamark:light:colour=* & seamark:name!=* & name!=* { name "${seamark:light:character} ${seamark:light:colour} ${seamark:light:period}s" }
 
 ######
 # define types
@@ -476,6 +477,7 @@ seamark:type=beacon_safe_water [0x010206 resolution 22]
 seamark:type=beacon_isolated_danger [0x010212 resolution 22]
 
 seamark:light:1=* [0x010100 resolution 20]
+seamark:type=light_major [0x010100 resolution 20]
 
 #other
 #waterway=depth & name=* { name '${name|subst:,=>.}' } [ 0x6200 resolution 22]

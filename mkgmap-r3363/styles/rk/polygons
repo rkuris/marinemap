@@ -58,6 +58,8 @@ seamark:type=depth_area & depth:area<12 [0x010304 resolution 16]
 seamark:type=depth_area & depth:area<36 [0x010305 resolution 16]
 seamark:type=depth_area [0x010306 resolution 16]
 
+seamark:type=dredged { name '${depth:area}' } [0x010306 resolution 16]
+
 place=village [0x03 resolution 19]
 place=island & name=* [0x53 resolution 19]
 place=islet & name=* [0x53 resolution 20]
