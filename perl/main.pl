@@ -7,14 +7,16 @@ my %litchr = ( 1=> 'F', 2=>'Fl', 3=>'LFl', 4=>'Q', 5=>'VQ', 6=>'UQ', 7=>'Iso', 8
 my %colour = ( 1=>'white', 2=>'black', 3=>'red', 4=>'green', 5=>'blue', 6=>'yellow', 7=>'grey', 8=>'brown', 9=>'amber', 10=>'violet', 11=>'orange', 12=>'magenta', 13=>'pink');
 
 $id = 0;
-for my $sourcefile (@ARGV) {
-    if ( $sourcefile =~ /\.000$/ ) {
-        my ( $mapid, $description );
-        ( $osm, $osmoutname ) = tempfile("tXXXXXX", DIR => '.', SUFFIX => '.osm' );
-        print $osm q/<?xml version='1.0' encoding='UTF-8'?>
+my ( $osm, $osmoutname ) = tempfile("tXXXXXX", DIR => '.', SUFFIX => '.osm' );
+print $osm q/<?xml version='1.0' encoding='UTF-8'?>
 <osm version='0.6' upload='true' generator='enc2osm'>
 /;
+my ( $mapid, $description );
+$mapid = '88887770';
+$description = 'Cali Marine Map';
 
+for my $sourcefile (@ARGV) {
+    if ( $sourcefile =~ /\.000$/ ) {
 	# LIGHTS
 	my $lightjson = zerotojson($sourcefile, 'LIGHTS');
         foreach my $feature ( @{ $lightjson->{'features'} } ) {
@@ -130,16 +132,6 @@ for my $sourcefile (@ARGV) {
 	my $depjson = zerotojson($sourcefile, 'DEPCNT');
         foreach my $feature ( @{ $depjson->{'features'} } ) {
             my $props = $feature->{'properties'};
-            unless ($mapid) {
-                my $sorind = $props->{'SORIND'};
-		if ($sorind !~ /,H-/) {
-                    $mapid = $sorind;
-                    $mapid =~ s/[^0-9]//g;
-                    $mapid .= '0' x ( 8 - ( length $mapid ) );
-                    $description = $1 if ( $sorind =~ /^[^,]*,[^,]*,[^,]*,([^,]*)/ );
-                    $description = $1 if ( !$description && $sourcefile =~ m:.*?/(.*?)\.000: );
-		}
-	    }
 	    if ( $props->{VALDCO} > 0 ) {
 		my $startid = $id - 1;
 		foreach
@@ -166,18 +158,14 @@ for my $sourcefile (@ARGV) {
 	    }
 
         }
+    }
+}
         print $osm qq(</osm>\n);
         close($osm);
-	$mapid = '00000000' unless $mapid || -f '00000000.img';
-	$mapid = '00000001' unless $mapid || -f '00000001.img';
-	$mapid = '00000002' unless $mapid || -f '00000002.img';
-
         print
 qq(java -jar mkgmap-r3363/mkgmap.jar --style-file=mkgmap-r3363/styles/rk -n "$mapid" --description="$description" $osmoutname\n);
         system
 qq(java -jar mkgmap-r3363/mkgmap.jar --style-file=mkgmap-r3363/styles/rk -n "$mapid" --description="$description" $osmoutname);
-    }
-}
 
 sub mtofeet
 {
