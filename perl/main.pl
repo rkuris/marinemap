@@ -136,7 +136,7 @@ for my $sourcefile (@ARGV) {
 		        print $osm "  <nd ref='$iid' />\n";
 		    }
 		    print $osm "  <nd ref='$startid' />\n";
-		    $feet = mtofeet( $props->{'DRVAL1'} );
+		    $feet = mtofeet( $props->{'DRVAL2'} );
 		    print $osm "  <tag k='depth:area' v='$feet' />\n";
 		    print $osm "  <tag k='seamark:type' v='depth_area' />\n";
 	            print $osm "  <tag k='name' v='$props->{OBJNAM}' />\n" if $props->{'OBJNAM'};
@@ -182,10 +182,45 @@ for my $sourcefile (@ARGV) {
             my $props = $feature->{'properties'};
 	    foreach my $coord ( @{ $feature->{'geometry'}->{'coordinates'} } ) {
 	        my $feet = mtofeet($coord->[2]);
-	        print $osm node(--$id, {'lat'=>$coord->[1], 'lon'=>$coord->[0]}, "  <tag k='waterway' v='depth' />\n  <tag k='name' v='$feet' />" );
+	        print $osm node(--$id, {'lat'=>$coord->[1], 'lon'=>$coord->[0]}, "  <tag k='waterway' v='depth' />\n  <tag k='depth' v='$feet' />" );
 	    }
         }
 	undef $sndjson;
+
+
+	# Rocks (UWTROC)
+	# 
+	# Some rocks have names in OBJNAM
+	# QUASOU is 2 for unknown depth, 6 for known depth
+	# VALSOU has depth for the known ones
+	# WATLEV 4 for covers/uncovers, 3 for always underwater, 5 awash
+	# 
+	# WATLEV=5 (awash) --> 0x01040a
+	# WATLEV=4 (covers/uncovers) -> 0x01040d
+	# WATLEV=3 (submerged) -> 0x01040e
+        my $rocjson = zerotojson($sourcefile, 'UWTROC');
+        foreach my $feature ( @{ $rocjson->{'features'} } ) {
+            my $props = $feature->{'properties'};
+	    my $coord = $feature->{'geometry'}->{'coordinates'};
+		    next if ref $coord->[1];
+		    next if ref $coord->[0];
+		    next unless $coord->[1];
+		    next unless $coord->[0];
+		    next if $coord->[1] < 10;
+	    $tags = "  <tag k='seamark:type' v='rock' />\n";
+	    if ($props->{'VALSOU'}) {
+	        my $feet = mtofeet($props->{'VALSOU'});
+		$tags .= "  <tag k='depth' v='$feet' />\n";
+	    }
+	    $tags .= "  <tag k='seamark:rock:exposition' v='shoaler' />\n" if $props->{EXPSOU} == 2;
+	    $tags .= "  <tag k='seamark:rock:water_level' v='covers' />\n" if $props->{WATLEV} == 4;
+	    $tags .= "  <tag k='seamark:rock:water_level' v='awash' />\n" if $props->{WATLEV} == 5;
+	    $tags .= "  <tag k='seamark:rock:water_level' v='submerged' />\n" if $props->{WATLEV} < 4 || $props->{WATLEV} > 5;
+	    $tags .= "  <tag k='name' v='$props->{OBJNAM}' />\n" if $props->{OBJNAM};
+	    print $osm node(--$id, {'lat'=>$coord->[1], 'lon'=>$coord->[0]}, $tags );
+	}
+	undef $rocjson;
+
 
 	# DEPTH CONTOURS
 	my $depjson = zerotojson($sourcefile, 'DEPCNT');

@@ -47,18 +47,18 @@ leisure=track & area=yes [0x19 resolution 21]
 leisure=water_park [0x09 resolution 21]
 
 leisure=marina [0x09 resolution 20]
-seamark:type=dredged_area & depth:dredged=* { name '${depth:dredged}' }
-seamark:type=dredged_area { name '${depth:dredged}' } [0x010302 resolution 20 continue]
-seamark:type=dredged_area [0x04c resolution 20]
+seamark:type=dredged_area & depth:dredged=* { add mkgmap:xt-depth='${depth:dredged}ft' } [0x010302 resolution 20 continue]
+seamark:type=dredged_area [0x010302 resolution 20 continue]
 seamark:type=harbour [0x49 resolution 22]
-seamark:type=depth_area & depth:area<0 [0x010301 resolution 16]
-seamark:type=depth_area & depth:area=0 [0x010302 resolution 16]
-seamark:type=depth_area & depth:area<6 [0x010303 resolution 16]
-seamark:type=depth_area & depth:area<12 [0x010304 resolution 16]
-seamark:type=depth_area & depth:area<36 [0x010305 resolution 16]
+seamark:type=depth_area { add mkgmap:xt-depth='${depth:area}ft' }
+
+seamark:type=depth_area & depth:area=0 [0x010301 resolution 16]
+seamark:type=depth_area & depth:area<7 [0x010302 resolution 16]
+seamark:type=depth_area & depth:area<13 [0x010304 resolution 16]
+seamark:type=depth_area & depth:area<91 [0x010305 resolution 16]
 seamark:type=depth_area [0x010306 resolution 16]
 
-seamark:type=dredged { name '${depth:area}' } [0x010306 resolution 16]
+seamark:type=dredged { add mkgmap:xt-depth='${depth:area}ft' } [0x010306 resolution 16]
 
 place=village [0x03 resolution 19]
 place=island & name=* [0x53 resolution 19]

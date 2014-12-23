@@ -479,9 +479,24 @@ seamark:type=beacon_isolated_danger [0x010212 resolution 22]
 seamark:light:1=* [0x010100 resolution 20]
 seamark:type=light_major [0x010100 resolution 20]
 
+
+# WATLEV=5 (above ground)
+seamark:type=rock & depth<0 { add mkgmap:xt-height='${depth|subst:"-=>"}ft' }
+# also test 010309 (exposed rock)
+seamark:type=rock & seamark:rock:water_level=awash [0x01040c resolution 20]
+
+seamark:type=rock & depth=* { add mkgmap:xt-depth='${depth}ft' }
+
+# WATLEV=4 (sometimes above ground)
+seamark:type=rock & seamark:rock:water_level=covers [0x010408 resolution 20]
+
+# not WATLEV 4 or 5 (underwater rock)
+seamark:type=rock & seamark:rock:water_level=* & seamark:rock:exposition=shoaler [0x01040d resolution 20]
+seamark:type=rock & seamark:rock:water_level=* [0x01040e resolution 20]
+
 #other
 #waterway=depth & name=* { name '${name|subst:,=>.}' } [ 0x6200 resolution 22]
-waterway=depth & name=* { name '${name|subst:,=>.}' } [ 0x010300 resolution 22]
+waterway=depth & depth=* { add mkgmap:xt-depth='${depth}ft' } [ 0x010301 resolution 22]
 waterway=fuel { add mkgmap:xt-facilities='0x40'; }[ 0x010903 resolution 22 ]
 waterway=wreck [ 0x010402 resolution 22 ]
 historic=wreck [ 0x010402 resolution 22 ]

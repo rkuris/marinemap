@@ -189,9 +189,9 @@ man_made=breakwater [0x010400 resolution 22]
 
 # leisure=marina [0x0d resolution 20]
 # this worked meh:
-seamark:type=dredged_area & depth:dredged=* { name '${depth:dredged}' } [0x010301 resolution 20 continue]
+seamark:type=dredged_area & depth:dredged=* { add mkgmap:xt-depth='${depth:dredged}ft' } [0x010301 resolution 20 continue]
 seamark:type=harbor [0x01060e resolution 20 continue]
-depth:contour=* { name '${depth:contour}ft' } [0x010301 resolution 20]
+depth:contour=* { add mkgmap:xt-depth= '${depth:contour}ft' } [0x010301 resolution 20]
 
 <finalize>
 # The finalizer section is executed for each element when a rule with an element type matches
