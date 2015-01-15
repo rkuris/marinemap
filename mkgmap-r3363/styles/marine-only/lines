@@ -1,0 +1,18 @@
+natural=coastline [0x15 resolution 12]
+power=line [0x29 resolution 21]
+
+(man_made=cable|(man_made=* & man_made ~ '.*pipe.*')) & area!=yes &
+tunnel!=yes & location != underground
+{name '${name} (${operator})' | '${name}' | '${operator}' }
+[0x28 resolution 23]
+
+man_made=pier [0x01040c resolution 22]
+man_made=breakwater [0x010400 resolution 22]
+
+seamark:type=dredged_area & depth:dredged=* { add mkgmap:xt-depth='${depth:dredged}ft' } [0x010301 resolution 20 continue]
+depth:contour=* { add mkgmap:xt-depth= '${depth:contour}ft' } [0x010301 resolution 20]
+
+seamark:type=anchorage [0x010606 resolution 20 continue]
+
+<finalize>
+name=* { name '${name}' }

@@ -22,6 +22,49 @@ $description = 'Cali Marine Map';
 
 for my $sourcefile (@ARGV) {
     if ( $sourcefile =~ /\.000$/ ) {
+
+    	# ANCHORAGE AREAS
+	my %catmap = (1=>'unrestricted', 2=>'deep_water', 3=>'tanker', 4=>'explosives', 5=>'quarantine', 6=>'seaplane', 7=>'small_craft',
+		      8=>'small_craft_mooring', 9=>'24_hour', 10=>'limited_period', 11=>'non_pushing', 12=>'dry_cargo', 13=>'raft');
+	
+	my $anchorages = zerotojson($sourcefile, 'ACHARE');
+#	print STDERR Dumper($anchorages);
+	foreach my $feature ( @{ $anchorages->{'features'} } ) {
+	    my $props = $feature->{'properties'};
+	    my $startid = $id - 1;
+	    foreach my $coord ( @{ $feature->{'geometry'}->{'coordinates'}->[0] } ) {
+		next if ref $coord->[1];
+		next if ref $coord->[0];
+		next unless $coord->[1];
+		next unless $coord->[0];
+		next if $coord->[1] < 10;
+		print $osm node(--$id, {'lat'=>$coord->[1], 'lon'=>$coord->[0]});
+	    }
+	    if ($startid != $id - 1) {
+		$id--;
+		print $osm
+" <way id='$id' uid='401715' user='rkuris' visible='true' version='2'>\n";
+		for ( my $iid = $startid ; $iid > $id ; --$iid ) {
+		    print $osm "  <nd ref='$iid' />\n";
+		}
+		print $osm "  <nd ref='$startid' />\n";
+		my $catach = $props->{'CATACH'};
+		print $osm "  <tag k='seamark:anchorage:category' v='$catmap{$catach}' />\n" if $catach && $catmap{$catach};
+		print $osm "  <tag k='seamark:type' v='anchorage' />\n";
+		$props->{'OBJNAM'} =~ s/&/&amp;/g if $props->{'OBJNAM'};
+		$props->{'INFORM'} =~ s/&/&amp;/g if $props->{'INFORM'};;
+		if ( $props->{'OBJNAM'} && $props->{'INFORM'} ) {
+			print $osm "  <tag k='seamark:name' v='$props->{OBJNAM} -- $props->{INFORM}' />\n";
+		} else {
+			print $osm "  <tag k='seamark:name' v='$props->{OBJNAM}' />\n" if $props->{'OBJNAM'};
+			print $osm "  <tag k='seamark:name' v='$props->{INFORM}' />\n" if $props->{'INFORM'};
+		}
+		# print $osm "  <tag k='name' v='$id' />\n"; # remove me
+		print $osm " </way>\n";
+	    }
+	}
+	undef $anchorages;
+	
 	# LIGHTS
 	my $lightjson = zerotojson($sourcefile, 'LIGHTS');
 	my %lightmap;
@@ -30,6 +73,8 @@ for my $sourcefile (@ARGV) {
 	    my $coord = $feature->{'geometry'}->{'coordinates'};
 	    $lightmap{$feature->{'properties'}->{'LNAM'}} = $feature;
 	}
+
+	# BEACONS
 	my $bcnjson = zerotojson($sourcefile, 'BCNLAT');
 	foreach my $feature ( @{ $bcnjson->{'features'} } ) {
             my $props = $feature->{'properties'};
@@ -78,6 +123,8 @@ for my $sourcefile (@ARGV) {
 	    }
 	    print $osm node(--$id, {'lat'=>$coord->[1], 'lon'=>$coord->[0]}, $tags);
 	}
+
+	# LIGHTS without BEACONS
         foreach my $feature ( values %lightmap ) {
             my $props = $feature->{'properties'};
 	    my $coord = $feature->{'geometry'}->{'coordinates'};
@@ -257,9 +304,9 @@ for my $sourcefile (@ARGV) {
         print $osm qq(</osm>\n);
         close($osm);
         print
-qq(java -jar mkgmap-r3363/mkgmap.jar --style-file=mkgmap-r3363/styles/rk -n "$mapid" --description="$description" --country-name="USA" --country-abbr="US" --region-name="California" --region-abbr=CA --lower-case --family-name="CA Marine" --max-jobs --copyright-message="NOAA maps are free, does not meet chart carriage regulations"  --license-file=LICENSE $osmoutname\n);
+qq(java -jar mkgmap-r3363/mkgmap.jar --style-file=mkgmap-r3363/styles/marine-only -n "$mapid" --description="$description" --country-name="USA" --country-abbr="US" --region-name="California" --region-abbr=CA --lower-case --family-name="CA Marine" --max-jobs --copyright-message="NOAA maps are free, does not meet chart carriage regulations"  --license-file=LICENSE $osmoutname\n);
         system
-qq(java -jar mkgmap-r3363/mkgmap.jar --style-file=mkgmap-r3363/styles/rk -n "$mapid" --description="$description" --country-name="USA" --country-abbr="US" --region-name="California" --region-abbr=CA --lower-case --family-name="CA Marine" --max-jobs --copyright-message="NOAA maps are free, does not meet chart carriage regulations"  --license-file=LICENSE $osmoutname);
+qq(java -jar mkgmap-r3363/mkgmap.jar --style-file=mkgmap-r3363/styles/marine-only -n "$mapid" --description="$description" --country-name="USA" --country-abbr="US" --region-name="California" --region-abbr=CA --lower-case --family-name="CA Marine" --max-jobs --copyright-message="NOAA maps are free, does not meet chart carriage regulations"  --license-file=LICENSE $osmoutname);
 
 sub mtofeet
 {
